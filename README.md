@@ -30,7 +30,7 @@ gunicorn wsgi --worker-class=gevent -t 4 -b 0.0.0.0:8000
 1. 下载虚拟机(vbox,vmware), 运行Linux, 比如 ubuntu
 2. 安装redis (apt-get install redis-server)
 3. git clone 项目
-4. 安装依赖 (项目使用Python 3，所以使用 pip3 install)
+4. 安装依赖 (项目使用Python 3，所以使用 pip3 install.具体需要的包 使用 python3 app.py runserver 运行程序会出现提示)
 5. 初始化数据库
 
     ```
