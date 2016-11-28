@@ -5,7 +5,7 @@
 - 用 app.py 文件末尾的命令运行程序
 
 ## Vagrant
-假设你 
+假设你
 1. vagrant 已经安装完毕，
 2. hyper-v 已禁用，
 3. vt-x 在 bios 中已经开启，
@@ -24,3 +24,18 @@ gunicorn wsgi --worker-class=gevent -t 4 -b 0.0.0.0:8000
 然后打开 `127.0.0.1:8080`
 
 如果不想开代理，则注释掉 `.Vagrantfile` 10-14行，且不带参数的运行 `vagrant ssh`
+
+## windows 开发
+*放弃 windows*
+1. 下载虚拟机(vbox,vmware), 运行Linux, 比如 ubuntu
+2. 安装redis (apt-get install redis-server)
+3. git clone 项目
+4. 安装依赖 (项目使用Python 3，所以使用 pip3 install)
+5. 初始化数据库
+
+    ```
+    # python app.py shell
+    >>> from models import db
+    >>> db.create_all()
+    ```
+6. 用 app.py 文件末尾的命令运行程序
