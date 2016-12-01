@@ -1,7 +1,29 @@
 from models.chat import Chat
+from models.user import User
 from routes import *
 import redis
 import json
+from functools import wraps
+
+
+def current_user():
+    uid = int(session.get('uid', -1))
+    u = User.query.get(uid)
+    return u
+
+
+def login_required(f):
+    @wraps(f)
+    def function(*args, **kwargs):
+        if current_user() is None:
+            # r = {
+            #     'success': False,
+            #     'message': '未登录',
+            # }
+            # return jsonify(r)
+            return redirect(url_for('user.index'))
+        return f(*args, **kwargs)
+    return function
 
 
 main = Blueprint('chat', __name__)
@@ -22,33 +44,38 @@ def stream():
 
 
 @main.route('/')
+@login_required
 def index():
+    print('chat index')
     ms = Model.query.all()
     return render_template('chat_index.html', chat_list=ms)
 
 
 @main.route('/add', methods=['POST'])
+@login_required
 def add():
+    u = current_user()
     msg = request.get_json()
-    name = msg.get('name', '')
-    if name == '':
-        name = '<匿名>'
     content = msg.get('content', '')
     channel = msg.get('channel', '')
     r = {
-        'name': name,
         'content': content,
         'channel': channel,
         'created_time': current_time(),
+        'username': u.username,
     }
     m = Model(r)
+    m.user_id = u.id
     m.save()
+    print('add chat', m)
     message = json.dumps(r, ensure_ascii=False)
     red.publish(chat_channel, message)
     return 'OK'
 
 
 @main.route('/subscribe')
+@login_required
 def subscribe():
     s = stream()
-    return Response(s, mimetype='text/event-stream')
+    mime = 'text/event-stream'
+    return Response(s, mimetype=mime)

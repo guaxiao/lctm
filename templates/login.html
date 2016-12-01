@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>login 页面</title>
+</head>
+<body>
+    <div>
+        <!-- html5 可以在按钮中写 action -->
+        <form method="post">
+            <input type="text" name="username">
+            <br>
+            <input type="text" name="username">
+            <br>
+            <button type="submit" formaction="{{ url_for('user.login') }}">登录</button>
+            <button type="submit" formaction="{{ url_for('user.register') }}">注册</button>
+        </form>
+    </div>
+</body>
+</html>
