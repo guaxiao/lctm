@@ -12,6 +12,8 @@ class Channel(db.Model, ModelMixin):
 
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
+    # chats = db.relationship('Chat', backref='channel', lazy='dynamic')
+
     def __init__(self, form):
         self.name = form.get('name', '')
         self.description = form.get('description', '')

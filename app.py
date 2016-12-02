@@ -1,12 +1,16 @@
 from flask import Flask
 from flask_migrate import Migrate, MigrateCommand
 from flask_script import Manager
+import logging
 
 
 from models import db
 from models.user import User
 from models.channel import Channel
 from models.chat import Chat
+
+
+from websocket import socketio
 
 app = Flask(__name__)
 manager = Manager(app)
@@ -15,8 +19,10 @@ manager = Manager(app)
 def register_routes(app):
     from routes.channel import main as routes_channel
     from routes.chat import main as routes_chat
+    from routes.user import main as routes_user
     app.register_blueprint(routes_channel, url_prefix='/channel')
     app.register_blueprint(routes_chat, url_prefix='/chat')
+    app.register_blueprint(routes_user, url_prefix='/user')
 
 
 def configure_app():
@@ -26,9 +32,16 @@ def configure_app():
     # 自行添加
     import config
     app.secret_key = config.secret_key
-    app.config['SQLALCHEMY_DATABASE_URI'] = config.secret_key
+    app.config['SQLALCHEMY_DATABASE_URI'] = config.db_uri
     db.init_app(app)
     register_routes(app)
+    # init socket app
+    socketio.init_app(app)
+    # 设置 log, 否则输出会被 gunicorn 吃掉
+    if not app.debug:
+        stream_handler = logging.StreamHandler()
+        stream_handler.setLevel(logging.INFO)
+        app.logger.addHandler(stream_handler)
 
 
 def configured_app():
@@ -56,4 +69,4 @@ if __name__ == '__main__':
     configure_app()
     manager.run()
 
-# (gunicorn --worker-class=gevent -t 4 app:app -b 0.0.0.0:8000 &)
+# (gunicorn wsgi --worker-class=gevent -t 4 -b 0.0.0.0:8000 &)
