@@ -41,3 +41,13 @@ def update():
     m = Model(form)
     m.update(form)
     return redirect(url_for('.index'))
+
+
+@main.route('/<string:name>/chats/<int:n>')
+def chats(name, n):
+    page_size = 10
+    chats = Channel.findByName(name).chats.offset(n * page_size).limit(page_size)
+    for i in chats:
+        print(i.content)
+    next_page_url = '/channel/{}/chats/{}'.format(name, n+1)
+    return render_template('message.html', chats=chats, url=next_page_url)

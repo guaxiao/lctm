@@ -12,7 +12,7 @@ class Channel(db.Model, ModelMixin):
 
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
-    # chats = db.relationship('Chat', backref='channel', lazy='dynamic')
+    chats = db.relationship('Chat', backref='channel', lazy='dynamic')
 
     def __init__(self, form):
         self.name = form.get('name', '')
@@ -22,3 +22,11 @@ class Channel(db.Model, ModelMixin):
     def update(self, form):
         self.name = form.get('name', '')
         self.description = form.get('description', '')
+
+    @classmethod
+    def findByName(cls, name):
+        return cls.query.filter_by(name=name).first()
+
+    @classmethod
+    def default_channel(cls):
+        return Channel.query.first()
