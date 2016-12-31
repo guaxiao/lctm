@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block board %}
+    <div id="id-div-board">
+        <h4 id="currentChannel" data-name="{{ channel_name }}">聊天记录</h4>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <script src="/static/js/emoji.js"></script>
+    {% if chats %}
+        {% for chat in chats %}
+            <div class="chat-item">
+                <div class="user">
+                    <div class="user-avatar"><img src="../../../static/{{ chat.user.avatar }}" class="user-avatar"></div>
+                    <div class="user-info">
+                        <div class="user-name">{{ chat.user.username }}</div>
+                        <div class="pass-time" href="#">
+                            <time data-time="{{ chat.created_time }}">{{ chat.created_time }}</time>
+                        </div>
+                    </div>
+                </div>
+                <div class="user_content" data-content="{{ chat.content }}">
+                    <script>console.log(filterEmoji(""))</script>
+                </div>
+            </div>
+        {% endfor %}
+
+    {% endif %}
+    <a href="{{ url }}">next</a>
+    <script>
+      document.querySelectorAll('.user_content').forEach(dom => {
+        var content = dom.getAttribute("data-content")
+        dom.innerHTML = filterEmoji(content)
+      })
+    </script>
+{% endblock %}

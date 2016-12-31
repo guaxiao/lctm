@@ -2,7 +2,8 @@
 
 {% block board %}
     <div id="id-div-board">
-        <h4 id="currentChannel" data-name="{{ channel_name }}">{# {{ channel_name }} - {{ channel_title }} #}</h4>
+        <h4 id="currentChannel"></h4>
+        <h4 id="historyMessage">点击查看聊天记录</h4>
     </div>
 {% endblock %}
 
@@ -27,4 +28,17 @@
         {% endfor %}
     {% endif %}
 #}
+<div id="id-div-panel">
+    <form class="pure-form pure-form-stacked" style="width: 100%">
+        <textarea id='id-input-content' class="sai-form-block" placeholder="内容"></textarea>
+        <button id='id-button-send' type='button'>发送消息</button>
+    </form>
+</div>
+
+<script src="/static/js/jquery.min.js"></script>
+<script src="/static/js/push.min.js"></script>
+
+<script type="text/javascript" src="/static/js/socket.io-1.4.5.js"></script>
+<script src="/static/js/chat.js"></script>
+<script src="/static/js/emoji.js"></script>
 {% endblock %}

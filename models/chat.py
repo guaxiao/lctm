@@ -10,10 +10,15 @@ class Chat(db.Model, ModelMixin):
     created_time = db.Column(db.Integer)
 
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    # channel_id = db.Column(db.Integer, db.ForeignKey('channels.id'))
+    channel_id = db.Column(db.Integer, db.ForeignKey('channels.id'))
+
+    # channel = db.relationship('Chat', backref='channel', lazy='dynamic')
+    # user = db.relationship('User', backref='user', lazy='dynamic')
+
 
     def __init__(self, form):
         self.content = form.get('content', '')
+        # self.channel = form.get('channel', '')
         self.channel = form.get('channel', '')
-        # self.user_id = form.get('user_id', '')
+        self.user = form.get('user', '')
         self.created_time = timestamp()

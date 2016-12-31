@@ -36,6 +36,9 @@ def configure_app():
     app.config['USER_AVATARS_DIR'] = config.user_avatar_dir
     db.init_app(app)
     register_routes(app)
+    import os
+    if os.path.isfile(config._db_path) is False:
+        init_db()
     # init socket app
     socketio.init_app(app)
     # 设置 log, 否则输出会被 gunicorn 吃掉
@@ -48,6 +51,16 @@ def configure_app():
 def configured_app():
     configure_app()
     return app
+
+
+def init_db():
+    with app.app_context():
+        db.create_all()
+        default_channel = {
+            'name': '大厅',
+            'description': '没有描述',
+        }
+        Channel(default_channel).save()
 
 
 @manager.command

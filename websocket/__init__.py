@@ -3,6 +3,8 @@ from flask import session
 from flask_socketio import emit
 from flask_socketio import join_room
 from flask_socketio import leave_room
+from models.channel import Channel
+from models.chat import Chat
 
 
 socketio = SocketIO()
@@ -11,6 +13,12 @@ socketio = SocketIO()
 def default_channel():
     from models.channel import Channel
     return Channel.query.first()
+
+
+def save_chat(channel_id):
+     from models.channel import Channel
+     c = Channel.query.get(channel_id)
+     print(c.chats)
 
 
 def current_user():
@@ -25,7 +33,7 @@ def connect():
     print('connected', current_user().id)
     message = {
         'type': 'join',
-        'channel': default_channel().name,
+        'channel': Channel.default_channel().name,
         'username': current_user().username,
         'avatar': current_user().avatar,
         'content': '{} 加入聊天'.format(current_user().username)
@@ -75,7 +83,14 @@ def text(message):
     message['type'] = 'message'
     message['username'] = current_user().username
     message['avatar'] = current_user().avatar
-    room = message.get('channel', default_channel().name)
+    room = message.get('channel', Channel.default_channel().name)
     print(message)
+    # Channel.findByName(room).save_chat(Chat(message))
+    chat = {
+        'content': message.get('content', ''),
+        'user': current_user(),
+        'channel': Channel.findByName(room),
+    }
+    Chat(chat).save()
     join_room(room)
     emit('message', message, broadcast=True)
