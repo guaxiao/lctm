@@ -32,9 +32,10 @@ var chatItemTemplate = function (chat) {
     var type = chat.type
     var name = chat.username;
     var avatar = chat.avatar;
+    var time = new Date();
 
     if (type == 'join') {
-        var t = `
+        var _t = `
             <div>
                 <img src="${avatar}"  height="10" width="10" class="avatar__image" alt="">
                 <span>${name} 加入了聊天</span>
@@ -42,54 +43,28 @@ var chatItemTemplate = function (chat) {
         `
     } else {
         var content = chat.content;
-        content = filterEmoji(content)
-        var time = chat.created_time;
+        // content = filterEmoji(content)
+        // var time = chat.created_time;
+        var staticFileURLPreix = location.origin + '/static/'
         var t = `
-        <div class="chat-item burstStart read burstFinal">
-            <div class="chat-item__container">
-                <div class="chat-item__aside">
-                    <div class="chat-item__avatar">
-                        <span class="widget">
-                            <div class="trpDisplayPicture avatar-s">
-                                <img src="${avatar}"  height="30" width="30" class="avatar__image" alt="">
-                            </div>
-                        </span>
-                    </div>
-                </div>
-                <div class="chat-item__actions js-chat-item-actions">
-                    <i class="chat-item__icon icon-check chat-item__icon--read chat-item__icon--read-by-some js-chat-item-readby"></i>
-                    <i class="chat-item__icon icon-ellipsis"></i>
-                </div>
-                <div class="chat-item__content">
-                    <div class="chat-item__details">
-                        <div class="chat-item__from js-chat-item-from">${name}</div>
-                        <a class="chat-item__time js-chat-time" href="#">
-                            <time data-time="${time}"></time>
-                        </a>
-                    </div>
-                    <div class="chat-item__text js-chat-item-text">${content}</div>
-                </div>
+        <li class="left clearfix chat-item">
+          <span class="chat-img pull-left">
+            <img src="${staticFileURLPreix + avatar}" alt="User Avatar">
+          </span>
+          <div class="chat-body clearfix">
+            <div class="header">
+              <strong class="primary-font">${name}</strong>
+              <small class="pull-right text-muted"><i class="fa fa-clock-o"></i> ${time}</small>
             </div>
-        </div>
+            <p>
+              ${content}
+            </p>
+          </div>
+        </li>
         `;
-      var staticFileURLPreix = location.origin + '/static/'
-      var new_t = `<div class="chat-item">
-                      <div class="user">
-                          <div class="user-avatar"><img src="${staticFileURLPreix + avatar}" class="user-avatar"></div>
-                          <div class="user-info">
-                              <div class="user-name">${name}</div>
-                              <div class="pass-time" href="#">
-                                  <time data-time="${time}"></time>
-                              </div>
-                          </div>
-                      </div>
-                      <div class="user_content">
-                          ${content}
-                      </div>
-                  </div>`
     }
 
-    return new_t;
+    return t;
 };
 
 var insertChats = function (chats) {
@@ -97,7 +72,7 @@ var insertChats = function (chats) {
     var chatsDiv = $(selector);
     var html = chats.map(chatItemTemplate);
     chatsDiv.append(html.join(''));
-    scrollToBottom(selector);
+    scrollToBottom(".chat-message");
 };
 
 var insertChatItem = function (chat) {
@@ -105,7 +80,7 @@ var insertChatItem = function (chat) {
     var chatsDiv = $(selector);
     var t = chatItemTemplate(chat);
     chatsDiv.append(t);
-    scrollToBottom(selector);
+    scrollToBottom(".chat-message");
 }
 
 var chatResponse = function (r) {
@@ -199,7 +174,6 @@ var bindActions = function () {
     // 频道切换
     $('.rc-channel').on('click', 'a', function (e) {
         e.preventDefault();
-        console.log(this);
         var channel = $(this).text();
         changeChannel(channel);
         // 切换显示
@@ -247,12 +221,13 @@ var longTimeAgo = function () {
 };
 
 var __main = function () {
+    initChatStore();
     subscribe();
     bindActions();
     // 选中第一个 channel 作为默认 channel
     $('.rc-channel').eq(0).find('a').click();
     currentChannel = $('.rc-channel').eq(0).find("a").text();
-    initChatStore();
+
     // 更新时间的函数
     setInterval(function () {
         longTimeAgo();

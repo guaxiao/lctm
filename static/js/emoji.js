@@ -73,3 +73,13 @@ function replaceAll(s, a, b) {
   s = s.replace(a, b)
   return replaceAll(s, a, b)
 }
+
+var render_emoji = function(selector) {
+  var template = ''
+  for (var k in emoji) {
+    var v = emoji[k]
+    var t = `<span class=svg-container data-k=${k}> ${v} </span>`
+    template += t
+  }
+  $(selector).append(`<div class='emoji'> ${template} <div>`)
+}
