@@ -5,6 +5,8 @@ from flask_socketio import join_room
 from flask_socketio import leave_room
 from models.channel import Channel
 from models.chat import Chat
+from models.reaction import Reaction
+from models.emoji import Emoji
 
 
 socketio = SocketIO()
@@ -79,18 +81,35 @@ def leave(channel):
 def text(message):
     """Sent by a client when the user entered a new message.
     The message is sent to all people in the room."""
-    # room = message.get('channel')
+
+    room = message.get('channel', Channel.default_channel().name)
+    c = {
+        'content': message.get('content', ''),
+        'user': current_user(),
+        'channel': Channel.find_by_name(room),
+    }
+    chat = Chat(c).save()
+    print(chat)
+    message['id'] = chat.id
     message['type'] = 'message'
     message['username'] = current_user().username
     message['avatar'] = current_user().avatar
-    room = message.get('channel', Channel.default_channel().name)
-    print(message)
-    # Channel.findByName(room).save_chat(Chat(message))
-    chat = {
-        'content': message.get('content', ''),
-        'user': current_user(),
-        'channel': Channel.findByName(room),
-    }
-    Chat(chat).save()
+
     join_room(room)
     emit('message', message, broadcast=True)
+
+@socketio.on('toggle_reaction')
+def toggle_reaction(message):
+    room = message.get('channel', Channel.default_channel().name)
+    join_room(room)
+    chat_id = message.get('chat_id', 1)
+    emoji_d = message.get('emoji_d', 1)
+    d = {
+        'emoji': Emoji.find_by_id(emoji_d),
+        'user': current_user(),
+        'chat': Chat.find_by_id(chat_id),
+    }
+    status = Reaction.toggle(d)
+    message['status'] = status
+    print(message)
+    emit('response_toggle_reaction', message, broadcast=True)

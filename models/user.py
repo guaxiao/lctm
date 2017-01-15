@@ -14,6 +14,7 @@ class User(db.Model, ModelMixin):
 
     channel = db.relationship('Channel', backref='user', lazy='dynamic')
     chats = db.relationship('Chat', backref='user', lazy='dynamic')
+    reactions = db.relationship('Reaction', backref='user', lazy='dynamic')
 
     def __init__(self, form):
         self.username = form.get('username', '')
