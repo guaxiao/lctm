@@ -7,6 +7,7 @@ from models.channel import Channel
 from models.chat import Chat
 from models.reaction import Reaction
 from models.emoji import Emoji
+import html
 
 
 socketio = SocketIO()
@@ -83,6 +84,7 @@ def text(message):
     The message is sent to all people in the room."""
 
     room = message.get('channel', Channel.default_channel().name)
+    message['content'] = html.escape(message['content'])
     c = {
         'content': message.get('content', ''),
         'user': current_user(),
