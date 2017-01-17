@@ -90,4 +90,5 @@ ENV/
 .ropeproject
 
 *.sqlite
+chat.sqlite.*
 .vagrant/

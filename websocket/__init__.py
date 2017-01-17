@@ -21,7 +21,6 @@ def default_channel():
 def save_chat(channel_id):
      from models.channel import Channel
      c = Channel.query.get(channel_id)
-     print(c.chats)
 
 
 def current_user():
@@ -33,7 +32,6 @@ def current_user():
 
 @socketio.on('connect')
 def connect():
-    print('connected', current_user().id)
     message = {
         'type': 'join',
         'channel': Channel.default_channel().name,
@@ -41,7 +39,6 @@ def connect():
         'avatar': current_user().avatar,
         'content': '{} 加入聊天'.format(current_user().username)
     }
-    print(message)
     emit('message', message, broadcast=True)
 
 
@@ -58,9 +55,7 @@ def join(channel):
         'username': current_user().username,
         'avatar': current_user().avatar,
     }
-    print(message)
     join_room(channel)
-    print('join channel', current_user().id)
     emit('message', message, broadcast=True)
 
 
@@ -72,9 +67,7 @@ def leave(channel):
         'username': current_user().username,
         'avatar': current_user().avatar,
     }
-    print(message)
     leave_room(channel)
-    print('leave channel', current_user().id)
     emit('message', message, broadcast=True)
 
 
@@ -91,7 +84,6 @@ def text(message):
         'channel': Channel.find_by_name(room),
     }
     chat = Chat(c).save()
-    print(chat)
     message['id'] = chat.id
     message['type'] = 'message'
     message['username'] = current_user().username
@@ -105,7 +97,7 @@ def toggle_reaction(message):
     room = message.get('channel', Channel.default_channel().name)
     join_room(room)
     chat_id = message.get('chat_id', 1)
-    emoji_d = message.get('emoji_d', 1)
+    emoji_id = message.get('emoji_id', 1)
     d = {
         'emoji': Emoji.find_by_id(emoji_d),
         'user': current_user(),
@@ -113,5 +105,4 @@ def toggle_reaction(message):
     }
     status = Reaction.toggle(d)
     message['status'] = status
-    print(message)
     emit('response_toggle_reaction', message, broadcast=True)

@@ -47,8 +47,6 @@ def stream():
 @main.route('/')
 @login_required
 def index():
-    print('chat index')
-    # ms = Model.query.all()
     cs = Channel.query.all()
     # return render_template('chat_index.html', chat_list=ms)
     return render_template('chat_room.html', channel_list=cs)

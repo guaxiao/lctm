@@ -27,7 +27,6 @@ class Reaction(db.Model, ModelMixin):
 
     @classmethod
     def toggle(cls, data):
-        print(data)
         d = {
             'user_id': data['user'].id,
             'chat_id': data['chat'].id,

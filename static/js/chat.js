@@ -102,7 +102,6 @@ var ReactionSington = (function() {
   var reaction;
   return {
     new: function(data) {
-      console.log(init);
       if (init == undefined) {
         init = true;
         reaction = new emojiPanel(data);
@@ -114,7 +113,6 @@ var ReactionSington = (function() {
       }
     },
     render: function(data) {
-      console.log(reaction);
       return reaction.render(data)
     }
   }
@@ -227,12 +225,6 @@ var chatResponse = function (r) {
 
 
 var subscribe = function () {
-    // var sse = new EventSource("/chat/subscribe");
-    // sse.onmessage = function (e) {
-    //     log(e, e.data);
-    //     chatResponse(e.data);
-    // };
-
     socket.on('message', function(data) {
       chatResponse(JSON.stringify(data));
     });
@@ -240,31 +232,12 @@ var subscribe = function () {
 
 var bindToggleReaction = function() {
   socket.on('response_toggle_reaction', function(data) {
-    console.log(data);
     var chat = $(`[data-id=${data.chat_id}]`)
-    console.log(chat);
     var reaction = chat.find(`div[data-emoji-id=${data.emoji_id}]`)
-    // if (reaction.length > 0) {
-    //   reaction.find('.reaction-nums').html();
-    //   var n = reaction.find('.reaction-nums').html();
-    //   reaction.find('.reaction-nums').html(parseInt(n) + 1);
-    //   console.log(6666);
-    // } else {
-    //   var t = `
-    //   <div class=inline-block data-emoji-id=${data.emoji_id}>
-    //     ${ReactionSington.render(data.emoji_id)}
-    //     <span class='reaction-nums'>1</span>
-    //   </div>
-    //   `
-    //   // var t = ReactionSington.render(data)
-    //   currentChat.find('.chat-reaction-list').append(t)
-    // }
     if (data.status == 'add') {
       if (reaction.length > 0) {
-        reaction.find('.reaction-nums').html();
         var n = reaction.find('.reaction-nums').html();
         reaction.find('.reaction-nums').html(parseInt(n) + 1);
-        console.log(6666);
       } else {
         var t = `
         <div class=inline-block data-emoji-id=${data.emoji_id}>
@@ -272,47 +245,23 @@ var bindToggleReaction = function() {
           <span class='reaction-nums'>1</span>
         </div>
         `
-        // var t = ReactionSington.render(data)
-        currentChat.find('.chat-reaction-list').append(t)
+        chat.find('.chat-reaction-list').append(t)
       }
     } else {
       reaction.find('.reaction-nums').html();
       var n = reaction.find('.reaction-nums').html();
-
-      console.log(reaction);
-      console.log(reaction.find('.reaction-nums'));
-      console.log(parseInt(n) - 1);
       reaction.find('.reaction-nums').html(parseInt(n) - 1);
-      console.log(2333);
     }
   });
 }
 
 var sendMessage = function () {
-    // var name = $('#id-input-name').val();
     var content = $('#id-input-content').val();
     var message = {
-        // username: name,
         content: content,
         channel: currentChannel,
     };
 
-    // var request = {
-    //     url: '/chat/add',
-    //     type: 'post',
-    //     contentType: 'application/json',
-    //     data: JSON.stringify(message),
-    //     success: function (r) {
-    //         log('success', r);
-    //     },
-    //     error: function (err) {
-    //         log('error', err);
-    //     }
-    // };
-    // $.ajax(request);
-
-    // websocket
-    // socket.emit('text', message);
     socket.emit('text', message);
     $("#id-input-content").val("");
 
@@ -328,7 +277,6 @@ var currentChat;
 
 var bindActions = function () {
     $('#id-button-send').on('click', function () {
-        // $('#id-input-content').val();
         sendMessage();
         return false;
     });
@@ -346,8 +294,8 @@ var bindActions = function () {
         var channel = $(this).text();
         changeChannel(channel);
         // 切换显示
-        // $('.rc-channel').removeClass('active');
-        // $(this).closest('.rc-channel').addClass('active');
+        $('.rc-channel').removeClass('active');
+        $(this).closest('.rc-channel').addClass('active');
         // reload 信息
         $('#main').find('.chat-item').remove();
         var chats = chatStore[currentChannel];
@@ -420,7 +368,6 @@ function api(url) {
     xhr.onload = function (e) {
       if (this.status === 200) {
         result = JSON.parse(this.responseText);
-        console.log(result);
         resolve(result);
       }
     };
@@ -445,7 +392,6 @@ function reactionCallback(data) {
     reaction.find('.reaction-nums').html();
     var n = reaction.find('.reaction-nums').html();
     reaction.find('.reaction-nums').html(parseInt(n) + 1);
-    console.log(6666);
   } else {
     var t = `
     <div class=inline-block data-emoji-id=${emoji_id}>
@@ -456,7 +402,6 @@ function reactionCallback(data) {
     // var t = ReactionSington.render(data)
     currentChat.find('.chat-reaction-list').append(t)
   }
-  console.log(currentChat.find(`div[data-emoji-id=${emoji_id}]`));
 }
 function toggleReaction(data) {
   var emoji_id = data.replace(/:/g, '')
