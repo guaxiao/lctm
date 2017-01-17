@@ -12,8 +12,7 @@ class Chat(db.Model, ModelMixin):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     channel_id = db.Column(db.Integer, db.ForeignKey('channels.id'))
 
-    # channel = db.relationship('Chat', backref='channel', lazy='dynamic')
-    # user = db.relationship('User', backref='user', lazy='dynamic')
+    reactions = db.relationship('Reaction', backref='chat', lazy='dynamic')
 
 
     def __init__(self, form):
@@ -22,3 +21,7 @@ class Chat(db.Model, ModelMixin):
         self.channel = form.get('channel', '')
         self.user = form.get('user', '')
         self.created_time = timestamp()
+
+    @classmethod
+    def get_all_reaction_by_id(cls, id):
+        return cls.query.get(id).reactions

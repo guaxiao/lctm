@@ -8,6 +8,8 @@ from models import db
 from models.user import User
 from models.channel import Channel
 from models.chat import Chat
+from models.emoji import Emoji
+from models.reaction import Reaction
 
 
 from websocket import socketio
@@ -20,9 +22,15 @@ def register_routes(app):
     from routes.channel import main as routes_channel
     from routes.chat import main as routes_chat
     from routes.user import main as routes_user
+    from routes.emoji import main as routes_emoji
+    from routes.reaction import main as routes_reaction
+    from routes.test import main as routes_test
     app.register_blueprint(routes_channel, url_prefix='/channel')
     app.register_blueprint(routes_chat, url_prefix='/chat')
     app.register_blueprint(routes_user, url_prefix='/user')
+    app.register_blueprint(routes_emoji, url_prefix='/emoji')
+    app.register_blueprint(routes_reaction, url_prefix='/reaction')
+    app.register_blueprint(routes_test, url_prefix='/test')
 
 
 def configure_app():

@@ -24,9 +24,9 @@ class Channel(db.Model, ModelMixin):
         self.description = form.get('description', '')
 
     @classmethod
-    def findByName(cls, name):
+    def find_by_name(cls, name):
         return cls.query.filter_by(name=name).first()
 
     @classmethod
     def default_channel(cls):
-        return Channel.query.first()
+        return cls.query.first()

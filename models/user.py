@@ -14,6 +14,7 @@ class User(db.Model, ModelMixin):
 
     channel = db.relationship('Channel', backref='user', lazy='dynamic')
     chats = db.relationship('Chat', backref='user', lazy='dynamic')
+    reactions = db.relationship('Reaction', backref='user', lazy='dynamic')
 
     def __init__(self, form):
         self.username = form.get('username', '')
@@ -25,7 +26,6 @@ class User(db.Model, ModelMixin):
 
     def valid(self):
         valid_username = User.query.filter_by(username=self.username).first() is None
-        print(self.username, self.password)
         valid_username_len = len(self.username) >= 3
         valid_password_len = len(self.password) >= 3
         # valid_captcha = self.captcha == '3'
@@ -50,7 +50,6 @@ class User(db.Model, ModelMixin):
     def update_avatar(self, avatar):
         filename = 'avatar_' + self.username + '.' + avatar.filename.split('.')[-1]
         path = app.config['USER_AVATARS_DIR'] + filename
-        print(os.getcwd())
         avatar.save(path)
         self.avatar = '/' + path
         self.save()

@@ -7,6 +7,117 @@ var chatStore = {
     '灌水': [],
 };
 
+var emojiPanel = function(data) {
+  this.e = document.querySelector(data.selector)
+  this.func = data.func
+  this.emojiList = []
+  this.emojiMap = {}
+  this.buttonId = `id-${(new Date()).valueOf().toString()}`
+  this.init()
+}
+
+emojiPanel.prototype.init = function() {
+  const t = `
+  <div class='div-emoji-main'>
+    <div class="div-emoji-button" id="${this.buttonId}">
+    </div>
+  </div>
+  `
+  this.e.innerHTML = t;
+  const btn = document.querySelector(`#${this.buttonId}`)
+  if (this.emojiList.length == 0) {
+    api('/emoji').then((emojiList) => {
+      this.emojiList = emojiList
+      this.emojiList.map((v, i) => {
+        this.emojiMap[v.key] = `
+          <img class="emoji-img" data-key=${v.key} src=${v.value}>
+        `
+      })
+    })
+  }
+  btn.onclick = () => {
+    const t = `
+    <div class="div-emoji-container">
+    </div>
+    `
+    const m = document.querySelector('.div-emoji-main')
+    m.innerHTML += t
+    const c = document.querySelector('.div-emoji-container')
+    var it = ''
+    for (let i = 0; i < this.emojiList.length; i++) {
+      const emoji = this.emojiList[i]
+      const e = `
+        <img class="div-emoji-item" data-key=${emoji.key} src=${emoji.value}>
+      `
+      it += e
+    }
+    c.innerHTML = it
+    this.active()
+  }
+}
+
+emojiPanel.prototype.active = function() {
+  const btn = document.querySelector(`#${this.buttonId}`)
+  const container = document.querySelector('.div-emoji-container')
+  container.onclick = (e) => {
+    if (e.target.localName == 'img') {
+      this.func(e.target.dataset.key);
+    }
+  }
+
+  btn.onclick = () => {
+    const e = document.querySelector('.div-emoji-container')
+    const t = `
+    <div class="div-emoji-container">
+    </div>
+    `
+    e.style.animationName = 'unshow'
+    e.addEventListener("webkitAnimationEnd", () => {
+      this.init();
+    });
+  }
+}
+
+emojiPanel.prototype.render = function(message) {
+  var items = message.split(':')
+
+  var b = items.map((v, i) => {
+    return this.emojiMap[`:${v}:`] || `<span>${v}</span>`
+  })
+  return b.join('')
+}
+
+var emoji = new emojiPanel({
+  selector: '.emoji',
+  func: emojiCallback,
+})
+
+emojiPanel.prototype.changeSelector = function(selector) {
+  this.e.innerHTML = ''
+  this.e = document.querySelector(selector)
+}
+
+var ReactionSington = (function() {
+  var init;
+  var reaction;
+  return {
+    new: function(data) {
+      if (init == undefined) {
+        init = true;
+        reaction = new emojiPanel(data);
+        return reaction;
+      } else {
+        reaction.changeSelector(data.selector);
+        reaction.init()
+        return reaction
+      }
+    },
+    render: function(data) {
+      return reaction.render(data)
+    }
+  }
+})()
+
 var initChatStore = function() {
   $('.rc-channel').map(function() {
     var channel = $(this).find("a").text();
@@ -29,12 +140,13 @@ var scrollToBottom = function (selector) {
 };
 
 var chatItemTemplate = function (chat) {
-    var type = chat.type
+    var type = chat.type;
     var name = chat.username;
     var avatar = chat.avatar;
+    var time = new Date();
 
     if (type == 'join') {
-        var t = `
+        var _t = `
             <div>
                 <img src="${avatar}"  height="10" width="10" class="avatar__image" alt="">
                 <span>${name} 加入了聊天</span>
@@ -42,54 +154,32 @@ var chatItemTemplate = function (chat) {
         `
     } else {
         var content = chat.content;
-        content = filterEmoji(content)
-        var time = chat.created_time;
+        var id = chat.id;
+        content = emoji.render(content)
+        // var time = chat.created_time;
+        var staticFileURLPreix = location.origin + '/static/'
         var t = `
-        <div class="chat-item burstStart read burstFinal">
-            <div class="chat-item__container">
-                <div class="chat-item__aside">
-                    <div class="chat-item__avatar">
-                        <span class="widget">
-                            <div class="trpDisplayPicture avatar-s">
-                                <img src="${avatar}"  height="30" width="30" class="avatar__image" alt="">
-                            </div>
-                        </span>
-                    </div>
-                </div>
-                <div class="chat-item__actions js-chat-item-actions">
-                    <i class="chat-item__icon icon-check chat-item__icon--read chat-item__icon--read-by-some js-chat-item-readby"></i>
-                    <i class="chat-item__icon icon-ellipsis"></i>
-                </div>
-                <div class="chat-item__content">
-                    <div class="chat-item__details">
-                        <div class="chat-item__from js-chat-item-from">${name}</div>
-                        <a class="chat-item__time js-chat-time" href="#">
-                            <time data-time="${time}"></time>
-                        </a>
-                    </div>
-                    <div class="chat-item__text js-chat-item-text">${content}</div>
-                </div>
+        <li class="left clearfix chat-item" data-id=${id}>
+          <span class="chat-img pull-left">
+            <img src="${staticFileURLPreix + avatar}" alt="User Avatar">
+          </span>
+          <div class="chat-body clearfix">
+            <div class="header">
+              <strong class="primary-font">${name}</strong>
+              <small class="pull-right text-muted"><i class="fa fa-clock-o"></i> ${time}</small>
             </div>
-        </div>
+            <p>
+              ${content}
+            </p>
+            <div class="chat-reaction-list">
+            </div>
+          </div>
+
+        </li>
         `;
-      var staticFileURLPreix = location.origin + '/static/'
-      var new_t = `<div class="chat-item">
-                      <div class="user">
-                          <div class="user-avatar"><img src="${staticFileURLPreix + avatar}" class="user-avatar"></div>
-                          <div class="user-info">
-                              <div class="user-name">${name}</div>
-                              <div class="pass-time" href="#">
-                                  <time data-time="${time}"></time>
-                              </div>
-                          </div>
-                      </div>
-                      <div class="user_content">
-                          ${content}
-                      </div>
-                  </div>`
     }
 
-    return new_t;
+    return t;
 };
 
 var insertChats = function (chats) {
@@ -97,7 +187,7 @@ var insertChats = function (chats) {
     var chatsDiv = $(selector);
     var html = chats.map(chatItemTemplate);
     chatsDiv.append(html.join(''));
-    scrollToBottom(selector);
+    scrollToBottom(".chat-message");
 };
 
 var insertChatItem = function (chat) {
@@ -105,7 +195,7 @@ var insertChatItem = function (chat) {
     var chatsDiv = $(selector);
     var t = chatItemTemplate(chat);
     chatsDiv.append(t);
-    scrollToBottom(selector);
+    scrollToBottom(".chat-message");
 }
 
 var chatResponse = function (r) {
@@ -135,42 +225,43 @@ var chatResponse = function (r) {
 
 
 var subscribe = function () {
-    // var sse = new EventSource("/chat/subscribe");
-    // sse.onmessage = function (e) {
-    //     log(e, e.data);
-    //     chatResponse(e.data);
-    // };
-
     socket.on('message', function(data) {
       chatResponse(JSON.stringify(data));
     });
 };
 
+var bindToggleReaction = function() {
+  socket.on('response_toggle_reaction', function(data) {
+    var chat = $(`[data-id=${data.chat_id}]`)
+    var reaction = chat.find(`div[data-emoji-id=${data.emoji_id}]`)
+    if (data.status == 'add') {
+      if (reaction.length > 0) {
+        var n = reaction.find('.reaction-nums').html();
+        reaction.find('.reaction-nums').html(parseInt(n) + 1);
+      } else {
+        var t = `
+        <div class=inline-block data-emoji-id=${data.emoji_id}>
+          ${ReactionSington.render(data.emoji_id)}
+          <span class='reaction-nums'>1</span>
+        </div>
+        `
+        chat.find('.chat-reaction-list').append(t)
+      }
+    } else {
+      reaction.find('.reaction-nums').html();
+      var n = reaction.find('.reaction-nums').html();
+      reaction.find('.reaction-nums').html(parseInt(n) - 1);
+    }
+  });
+}
+
 var sendMessage = function () {
-    // var name = $('#id-input-name').val();
     var content = $('#id-input-content').val();
     var message = {
-        // username: name,
         content: content,
         channel: currentChannel,
     };
 
-    // var request = {
-    //     url: '/chat/add',
-    //     type: 'post',
-    //     contentType: 'application/json',
-    //     data: JSON.stringify(message),
-    //     success: function (r) {
-    //         log('success', r);
-    //     },
-    //     error: function (err) {
-    //         log('error', err);
-    //     }
-    // };
-    // $.ajax(request);
-
-    // websocket
-    // socket.emit('text', message);
     socket.emit('text', message);
     $("#id-input-content").val("");
 
@@ -182,9 +273,10 @@ var changeChannel = function (channel) {
     currentChannel = channel;
 };
 
+var currentChat;
+
 var bindActions = function () {
     $('#id-button-send').on('click', function () {
-        // $('#id-input-content').val();
         sendMessage();
         return false;
     });
@@ -199,18 +291,39 @@ var bindActions = function () {
     // 频道切换
     $('.rc-channel').on('click', 'a', function (e) {
         e.preventDefault();
-        console.log(this);
         var channel = $(this).text();
         changeChannel(channel);
         // 切换显示
-        // $('.rc-channel').removeClass('active');
-        // $(this).closest('.rc-channel').addClass('active');
+        $('.rc-channel').removeClass('active');
+        $(this).closest('.rc-channel').addClass('active');
         // reload 信息
         $('#main').find('.chat-item').remove();
         var chats = chatStore[currentChannel];
         insertChats(chats);
         return false;
     })
+    $('#main').on('mouseenter', '.chat-item', function() {
+      if ($(this).find('.reaction').length > 0) {
+        return false;
+      }
+      currentChat = $(this)
+      var t = `
+      <div class="reaction">
+      </div>`
+      $(this).append(t)
+      var data = {
+        selector: '.reaction',
+        func: toggleReaction,
+      }
+      ReactionSington.new(data)
+      return false;
+    })
+    $('#main').on('mouseleave', '.chat-item', function() {
+      $(this).find('.reaction').remove()
+      return false;
+    })
+
+
 };
 
 // long time ago
@@ -246,13 +359,70 @@ var longTimeAgo = function () {
     });
 };
 
+function api(url) {
+  var url = url;
+  var xhr = new XMLHttpRequest();
+  var result;
+  var p = new Promise(function (resolve, reject) {
+    xhr.open('POST', url, true);
+    xhr.onload = function (e) {
+      if (this.status === 200) {
+        result = JSON.parse(this.responseText);
+        resolve(result);
+      }
+    };
+    xhr.onerror = function (e) {
+      reject(e);
+    };
+    xhr.send();
+  });
+  return p;
+}
+
+function emojiCallback(data) {
+  var input = $('#id-input-content')
+  var content = input.val() + data
+  input.val(content)
+}
+
+function reactionCallback(data) {
+  var emoji_id = data.replace(/:/g, '')
+  var reaction = currentChat.find(`div[data-emoji-id=${emoji_id}]`)
+  if (reaction.length > 0) {
+    reaction.find('.reaction-nums').html();
+    var n = reaction.find('.reaction-nums').html();
+    reaction.find('.reaction-nums').html(parseInt(n) + 1);
+  } else {
+    var t = `
+    <div class=inline-block data-emoji-id=${emoji_id}>
+      ${ReactionSington.render(data)}
+      <span class='reaction-nums'>1</span>
+    </div>
+    `
+    // var t = ReactionSington.render(data)
+    currentChat.find('.chat-reaction-list').append(t)
+  }
+}
+function toggleReaction(data) {
+  var emoji_id = data.replace(/:/g, '')
+  var chat_id = currentChat.data('id')
+  var message = {
+    emoji_id: emoji_id,
+    chat_id: chat_id,
+  }
+  socket.emit('toggle_reaction', message);
+}
+
+
 var __main = function () {
+    initChatStore();
     subscribe();
+    bindToggleReaction();
     bindActions();
     // 选中第一个 channel 作为默认 channel
     $('.rc-channel').eq(0).find('a').click();
     currentChannel = $('.rc-channel').eq(0).find("a").text();
-    initChatStore();
+
     // 更新时间的函数
     setInterval(function () {
         longTimeAgo();
