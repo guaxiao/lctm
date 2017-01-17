@@ -99,7 +99,7 @@ def toggle_reaction(message):
     chat_id = message.get('chat_id', 1)
     emoji_id = message.get('emoji_id', 1)
     d = {
-        'emoji': Emoji.find_by_id(emoji_d),
+        'emoji': Emoji.find_by_id(emoji_id),
         'user': current_user(),
         'chat': Chat.find_by_id(chat_id),
     }

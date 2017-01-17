@@ -40,3 +40,8 @@ gunicorn wsgi --worker-class=gevent -t 4 -b 0.0.0.0:8000
     >>> db.create_all()
     ```
 6. 用 app.py 文件末尾的命令运行程序
+
+## 上传表情说明
+
+1. 访问url : host/emoji/add
+2. 请上传zip包 (一定要.zip文件)，表情为图片
